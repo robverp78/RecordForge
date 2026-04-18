@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/RecordForge/">
+    <File Path="RecordForge/README.md" />
     <Project Path="RecordForge.Generator/Subro.RecordForge.Generator.csproj" />
     <Project Path="RecordForge/Subro.RecordForge.csproj" />
   </Folder>
@@ -8,5 +9,4 @@
     <Project Path="RecordForge.Tests/Subro.RecordForge.Tests.csproj" />
     <Project Path="RecordForge.WebTest/RecordForge.WebTest.csproj" Id="403f8a21-94d6-41e7-9882-58aead94fc0d" />
   </Folder>
-  <Project Path="../Subro.Generators/Core/Subro.Generators.Core.shproj" Id="5540db92-dde2-4e6c-8a44-7257b0d10d27" />
 </Solution>

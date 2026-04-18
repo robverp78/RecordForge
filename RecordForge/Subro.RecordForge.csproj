@@ -15,7 +15,7 @@
 		<Description>Generate record/record struct/struct/class implementations from interfaces via a simple attribute. Ships runtime attributes plus a Roslyn incremental source generator.</Description>
 		<PackageTags>roslyn;source-generator;incremental-generator;record;record-struct;code-generation;interface</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageReadmeFile>..\README.md</PackageReadmeFile>
 		<!--<RepositoryUrl>https://github.com/robverp78/Subro.RecordForge</RepositoryUrl>-->
 		<RepositoryType>git</RepositoryType>
 
@@ -32,10 +32,6 @@
 		</Compile>
 	</ItemGroup>
 
-	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\" />
-	</ItemGroup>
-
 	<!--
 		The generator project already references this runtime library (to see the attribute
 		symbols), so we can't add a reverse ProjectReference here without creating a cycle.
@@ -44,17 +40,12 @@
 	-->
 	<Target Name="_IncludeGeneratorInPackage">
 		<!-- Build the generator first (output discarded), then query its target path. -->
-		<MSBuild Projects="..\RecordForge.Generator\Subro.RecordForge.Generator.csproj"
-				 Targets="Build"
-				 Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0" />
-		<MSBuild Projects="..\RecordForge.Generator\Subro.RecordForge.Generator.csproj"
-				 Targets="GetTargetPath"
-				 Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
+		<MSBuild Projects="..\RecordForge.Generator\Subro.RecordForge.Generator.csproj" Targets="Build" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0" />
+		<MSBuild Projects="..\RecordForge.Generator\Subro.RecordForge.Generator.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
 			<Output TaskParameter="TargetOutputs" ItemName="_GeneratorTargetOutput" />
 		</MSBuild>
 		<ItemGroup>
-			<TfmSpecificPackageFile Include="@(_GeneratorTargetOutput)"
-									PackagePath="analyzers/dotnet/cs/%(Filename)%(Extension)" />
+			<TfmSpecificPackageFile Include="@(_GeneratorTargetOutput)" PackagePath="analyzers/dotnet/cs/%(Filename)%(Extension)" />
 		</ItemGroup>
 	</Target>
 
