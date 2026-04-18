@@ -15,13 +15,18 @@
 		<Description>Generate record/record struct/struct/class implementations from interfaces via a simple attribute. Ships runtime attributes plus a Roslyn incremental source generator.</Description>
 		<PackageTags>roslyn;source-generator;incremental-generator;record;record-struct;code-generation;interface</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageReadmeFile>..\README.md</PackageReadmeFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<!--<RepositoryUrl>https://github.com/robverp78/Subro.RecordForge</RepositoryUrl>-->
 		<RepositoryType>git</RepositoryType>
 
 		<!-- Hook for packing the generator DLL into analyzers/dotnet/cs -->
 		<TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_IncludeGeneratorInPackage</TargetsForTfmSpecificContentInPackage>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- 'Include' is the relative path from your .csproj to the physical file -->
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<!-- IsExternalInit is only needed to make the attribute's init-only properties compile; it should not end up in the package. -->

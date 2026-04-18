@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
 	  <AssemblyName>RecordForgeWeb</AssemblyName>
@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Subro.Generators\TestBase\Subro.Generators.TestBase.csproj" />
     <ProjectReference Include="..\RecordForge.Generator\Subro.RecordForge.Generator.csproj" />
     <ProjectReference Include="..\RecordForge\Subro.RecordForge.csproj" />
   </ItemGroup>
