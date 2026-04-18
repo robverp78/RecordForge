@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>12.0</LangVersion>
+		<IncludeBuildOutput>true</IncludeBuildOutput>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<!-- No package dependencies; NuGet will emit an empty netstandard2.0 dependency group. -->
+
+		<PackageId>Subro.RecordForge</PackageId>
+		<Version>0.1.0</Version>
+		<Authors>Robert Verpalen</Authors>
+		<Description>Generate record/record struct/struct/class implementations from interfaces via a simple attribute. Ships runtime attributes plus a Roslyn incremental source generator.</Description>
+		<PackageTags>roslyn;source-generator;incremental-generator;record;record-struct;code-generation;interface</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<!--<RepositoryUrl>https://github.com/robverp78/Subro.RecordForge</RepositoryUrl>-->
+		<RepositoryType>git</RepositoryType>
+
+		<!-- Hook for packing the generator DLL into analyzers/dotnet/cs -->
+		<TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_IncludeGeneratorInPackage</TargetsForTfmSpecificContentInPackage>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- IsExternalInit is only needed to make the attribute's init-only properties compile; it should not end up in the package. -->
+		<Compile Update="IsExternalInit.cs">
+			<BuildAction>Compile</BuildAction>
+			<CopyToOutput>false</CopyToOutput>
+			<Pack>false</Pack>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<!--
+		The generator project already references this runtime library (to see the attribute
+		symbols), so we can't add a reverse ProjectReference here without creating a cycle.
+		Instead, we invoke an MSBuild task during pack to build the generator and add its
+		DLL to the package under analyzers/dotnet/cs so Roslyn picks it up at consumer build.
+	-->
+	<Target Name="_IncludeGeneratorInPackage">
+		<!-- Build the generator first (output discarded), then query its target path. -->
+		<MSBuild Projects="..\RecordForge.Generator\Subro.RecordForge.Generator.csproj"
+				 Targets="Build"
+				 Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0" />
+		<MSBuild Projects="..\RecordForge.Generator\Subro.RecordForge.Generator.csproj"
+				 Targets="GetTargetPath"
+				 Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
+			<Output TaskParameter="TargetOutputs" ItemName="_GeneratorTargetOutput" />
+		</MSBuild>
+		<ItemGroup>
+			<TfmSpecificPackageFile Include="@(_GeneratorTargetOutput)"
+									PackagePath="analyzers/dotnet/cs/%(Filename)%(Extension)" />
+		</ItemGroup>
+	</Target>
+
+</Project>

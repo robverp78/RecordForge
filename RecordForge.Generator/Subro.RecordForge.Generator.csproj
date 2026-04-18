@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+
+	  <TargetFramework>netstandard2.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <LangVersion>latest</LangVersion>
+	  <!-- Source generator configuration -->
+	  <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	  <IsRoslynComponent>true</IsRoslynComponent>
+	  <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+	  <IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsTrimmable>
+  </PropertyGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
+		<!--
+			These Roslyn packages stay transitively visible to the test project. They are
+			not packed into the Subro.RecordForge NuGet anyway because the generator DLL
+			is included as a raw analyzer file (see Subro.RecordForge.csproj), not as a
+			package dependency, so there is no risk of leaking them to end consumers.
+		-->
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.3.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+		<PackageReference Include="Subro.Generators.TransformResult" Version="1.4.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+
+	<!--
+		A ProjectReference to the runtime library would create a pack-time circular
+		dependency (the runtime library packs this generator). Linking the real attribute
+		source would expose public duplicates of RecordKind/GenerateRecordAttribute/...
+		from both assemblies to any project that references both (e.g. the test project).
+		Instead we declare *internal* stubs with matching names so the generator compiles
+		its `nameof(...)` / const references. Roslyn resolves attributes by metadata name
+		in the consumer compilation, so only the name/shape of the real public types in
+		the runtime library matters at consumer-build time.
+	-->
+
+
+	<Import Project="..\..\Subro.Generators\Core\Subro.Generator.Core.projitems" Label="Core" />
+</Project>
