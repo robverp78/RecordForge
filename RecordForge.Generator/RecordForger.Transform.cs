@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Subro.RecordForge.Generator.Internal;
+using Subro.RecordForge;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

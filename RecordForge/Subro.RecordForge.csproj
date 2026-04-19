@@ -5,28 +5,24 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>12.0</LangVersion>
-		<IncludeBuildOutput>true</IncludeBuildOutput>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<!-- No package dependencies; NuGet will emit an empty netstandard2.0 dependency group. -->
-
-		<PackageId>Subro.RecordForge</PackageId>
-		<Version>0.1.0</Version>
-		<Authors>Robert Verpalen</Authors>
-		<Description>Generate record/record struct/struct/class implementations from interfaces via a simple attribute. Ships runtime attributes plus a Roslyn incremental source generator.</Description>
-		<PackageTags>roslyn;source-generator;incremental-generator;record;record-struct;code-generation;interface</PackageTags>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<!--<RepositoryUrl>https://github.com/robverp78/Subro.RecordForge</RepositoryUrl>-->
-		<RepositoryType>git</RepositoryType>
-
-		<!-- Hook for packing the generator DLL into analyzers/dotnet/cs -->
-		<TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_IncludeGeneratorInPackage</TargetsForTfmSpecificContentInPackage>
+		<!--
+			This project is *not* packed directly. It is the runtime library that ships
+			inside the Subro.RecordForge NuGet, which is produced by the sibling generator
+			project (..\RecordForge.Generator\Subro.RecordForge.Generator.csproj). That
+			project has a ProjectReference to this one (single source of truth for the
+			attribute / constant definitions) and, at pack time, embeds this DLL under
+			lib/netstandard2.0/ and its own DLL under analyzers/dotnet/cs/.
+		-->
+		<IsPackable>false</IsPackable>
+		<!--
+			AssemblyName stays 'Subro.RecordForge' (consumers load lib/netstandard2.0/Subro.RecordForge.dll),
+			but we give the project an explicit, distinct PackageId so the NuGet restore graph
+			doesn't see two projects claiming the same package identity (the generator project
+			publishes the real 'Subro.RecordForge' package). This id is never actually
+			published because of IsPackable=false.
+		-->
+		<PackageId>Subro.RecordForge.Runtime</PackageId>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<!-- 'Include' is the relative path from your .csproj to the physical file -->
-		<None Include="..\README.md" Pack="true" PackagePath="\" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<!-- IsExternalInit is only needed to make the attribute's init-only properties compile; it should not end up in the package. -->
@@ -36,22 +32,5 @@
 			<Pack>false</Pack>
 		</Compile>
 	</ItemGroup>
-
-	<!--
-		The generator project already references this runtime library (to see the attribute
-		symbols), so we can't add a reverse ProjectReference here without creating a cycle.
-		Instead, we invoke an MSBuild task during pack to build the generator and add its
-		DLL to the package under analyzers/dotnet/cs so Roslyn picks it up at consumer build.
-	-->
-	<Target Name="_IncludeGeneratorInPackage">
-		<!-- Build the generator first (output discarded), then query its target path. -->
-		<MSBuild Projects="..\RecordForge.Generator\Subro.RecordForge.Generator.csproj" Targets="Build" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0" />
-		<MSBuild Projects="..\RecordForge.Generator\Subro.RecordForge.Generator.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
-			<Output TaskParameter="TargetOutputs" ItemName="_GeneratorTargetOutput" />
-		</MSBuild>
-		<ItemGroup>
-			<TfmSpecificPackageFile Include="@(_GeneratorTargetOutput)" PackagePath="analyzers/dotnet/cs/%(Filename)%(Extension)" />
-		</ItemGroup>
-	</Target>
 
 </Project>
