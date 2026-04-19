@@ -20,8 +20,10 @@ public interface IPerson
 // public partial record Person(string Name, System.DateOnly DateOfBirth):IPerson;
 ```
 
-That is all if you want the defaults. No partial classes to babysit, no T4 templates, no reflection at runtime.
+That is all if you want the defaults. No other code to write, no T4 templates, no reflection at runtime.
 So AOT safe.
+
+a test environment can be found [here](https://robverp78.github.io/RecordForge/)
 
 ---
 
