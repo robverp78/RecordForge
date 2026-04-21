@@ -17,7 +17,7 @@ namespace Subro.Generators
         /// All available options of <see cref="RecordKind"/>, expressed through <see cref="GenerateTypeInfo"/>. 
         /// This is used to convert from the enum value to the needed information for generation
         /// </summary>
-        internal static GenerateTypeInfo[] generateTypeInfos =
+        internal static readonly GenerateTypeInfo[] generateTypeInfos =
            [
                 new( (int)RecordKind.Record, "record", true),
                 new( (int)RecordKind.RecordStruct, "record struct", true),
@@ -28,17 +28,19 @@ namespace Subro.Generators
            ];
 
 
-        internal static GenerateTypeInfo? GetGenerateTypeInfo(AttributeData attributeData, int Index)
+        internal static GenerateTypeInfo GetGenerateTypeInfo(AttributeData attributeData, int Index)
         {
             var kind  = attributeData.ConstructorArguments.Length > Index
                     && attributeData.ConstructorArguments[Index].Value is int kindValue
                         ? kindValue
                         : (int)GenerateRecordAttributeBase.DefaultKind;
-            return GetGenerateTypeInfo(kind);
+    
+            foreach(var info in generateTypeInfos)
+                if (info.KindValue == kind)
+                    return info;
+            return new(); //should not happen, exception path, so not optimized for performance
         }
 
-        internal static GenerateTypeInfo? GetGenerateTypeInfo(int kind)
-            => generateTypeInfos.FirstOrDefault(info => info.KindValue == kind);
         internal static DiagnosticInfoProvider CreateInvalidKindDiagnostic(AttributeData attributeData)
             => Diagnostics.Error("AIRINVKIND", "Invalid value for " + nameof(RecordKind))
                     .CreateDiagnosticInfo(LocationInfo.From(attributeData));
@@ -47,15 +49,12 @@ namespace Subro.Generators
     /// <summary>
     /// Information on what a <see cref="RecordKind"/> entails, and how to convert it
     /// </summary>
-    internal class GenerateTypeInfo(int KindValue, string Keywords, bool OnlyNeedsConstructor, bool IsReadOnly = false)
+    internal readonly record struct GenerateTypeInfo(int KindValue, string Keywords, bool OnlyNeedsConstructor, bool IsReadOnly = false)
     {
-        public readonly int KindValue = KindValue;
-        public readonly string Keywords = Keywords;
-        public readonly bool OnlyNeedsConstructor = OnlyNeedsConstructor;
-        public readonly bool IsReadOnly = IsReadOnly;
+        public bool IsNull => Keywords is null;
     }
 
-    record CreationSettings
+    record struct CreationSettings()
     {
         public bool AsPartial { get; set; } = GenerateRecordAttribute.DefaultAsPartial;
 
@@ -136,34 +135,11 @@ namespace Subro.Generators
         public bool IsPartial => Settings.AsPartial;
     }
 
-    internal class PropertyReference
-    {
-        public required PropertyCreationInfo Property{ get; init; }
-        public bool IsInPrimaryCtor { get; set; }
-
-        public string Name => Property.Name;
-    }
-
     internal record PropertyCreationInfo : PropertyInfo
     {
         public PropertyCreationInfo(IPropertySymbol prop) : base(prop)
         {
             HasInit = prop.SetMethod?.IsInitOnly == true;
-        }
-
-        /// <summary>
-        /// Syntax-only constructor: extracts property info from syntax without needing a semantic model.
-        /// Type names are taken as-written (not fully qualified).
-        /// </summary>
-        public PropertyCreationInfo(PropertyDeclarationSyntax syntax)
-            : base(
-                syntax.Identifier.Text,
-                new TypeReference(syntax.Type.ToString(), syntax.Type.ToString()),
-                syntax.AccessorList?.Accessors.Any(a => a.IsKind(SyntaxKind.GetAccessorDeclaration)) == true
-                    || syntax.ExpressionBody != null,
-                syntax.AccessorList?.Accessors.Any(a => a.IsKind(SyntaxKind.SetAccessorDeclaration)) == true)
-        {
-            HasInit = syntax.AccessorList?.Accessors.Any(a => a.IsKind(SyntaxKind.InitAccessorDeclaration)) == true;
         }
 
         public readonly bool HasInit;

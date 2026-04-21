@@ -1,7 +1,10 @@
 ﻿using Subro.RecordForge;
 using Subro.Generators;
 
-using Xunit;
+using TUnit.Core;
+using TUnit.Assertions;
+using TUnit.Assertions.Extensions;
+
 using static Subro.Generators.RecordForger;
 
 namespace Subro.Generators.Tests
@@ -24,37 +27,34 @@ namespace Subro.Generators.Tests
 
         static string interfaceInNamespace(string Interface)
             => $"using Subro.RecordForge;using System; namespace Foo{{ {Interface} }}";
-        
-        [Fact]
-        public void TestRecordsAreCreatedForAllRecordKinds()
+
+        public static IEnumerable<RecordKind> GetRecordKinds()
+            => Enum.GetValues<RecordKind>();
+
+        [Test]
+        [MethodDataSource(nameof(GetRecordKinds))]
+        public async Task TestRecordIsCreatedForKind(RecordKind kind)
         {
-            foreach (var kind in Enum.GetValues<RecordKind>())
-            {
-                TestRecordKind(kind);
-            }
+            var comp = GetTestCompilation().Create(interfaceInNamespace($"[GenerateRecord({nameof(RecordKind)}.{kind})]{testInterface}"));
+            await Assert.That(comp.GetSymbol("Foo.Bar")).IsNotNull();
         }
 
-        internal void TestRecordKind(RecordKind kind)
-        {
-          var comp = GetTestCompilation().Create(interfaceInNamespace($"[GenerateRecord({nameof(RecordKind)}.{kind})]{testInterface}" )); 
-                Assert.NotNull(comp.GetSymbol("Foo.Bar"));
-        }
-
-        [Fact]
+        [Test]
         public void TestCreatedRecordIsUsable()
         {
-            var comp = GetTestCompilation().Create(interfaceInNamespace($"[GenerateRecord]{testInterface} class AClass{{public AClass(){{var rec = new Bar(1);}}}}"));
+            // Passes if the compilation does not throw.
+            _ = GetTestCompilation().Create(interfaceInNamespace($"[GenerateRecord]{testInterface} class AClass{{public AClass(){{var rec = new Bar(1);}}}}"));
         }
 
-        [Fact]
-        public void TestUseOtherNamespaceAndName()
+        [Test]
+        public async Task TestUseOtherNamespaceAndName()
         {
             var comp = GetTestCompilation().Create(interfaceInNamespace($"[GenerateRecord(NameSpace=\"Test\", RecordName=\"Bar2\")]{testInterface}"));
-            Assert.NotNull(comp.GetSymbol("Test.Bar2"));
+            await Assert.That(comp.GetSymbol("Test.Bar2")).IsNotNull();
         }
- 
-        [Fact]
-        public void TestAssemblyLevelDeclaration()
+
+        [Test]
+        public async Task TestAssemblyLevelDeclaration()
         {
             var code = @$"
 using Subro.RecordForge;
@@ -63,13 +63,13 @@ using System;
 [assembly:GenerateRecordFromInterface(typeof(Foo.IBar))]
 [assembly:GenerateRecordFromInterface(typeof(Foo.IBar),RecordName = ""Bar2"")]
 namespace Foo{{ {testInterface} }}";
-            var comp = GetTestCompilation().Create(code );
-            Assert.NotNull(comp.GetSymbol("Foo.Bar"));
-            Assert.NotNull(comp.GetSymbol("Foo.Bar2"));
+            var comp = GetTestCompilation().Create(code);
+            await Assert.That(comp.GetSymbol("Foo.Bar")).IsNotNull();
+            await Assert.That(comp.GetSymbol("Foo.Bar2")).IsNotNull();
         }
 
-        [Fact]
-        public void TestAssemblyLevelDeclarationCrossAssembly()
+        [Test]
+        public async Task TestAssemblyLevelDeclarationCrossAssembly()
         {
             // Compile the interface in a separate assembly
             var interfaceAssembly = new TestCompiler { AssemblyName = "InterfaceLib" }
@@ -82,12 +82,9 @@ namespace Foo{{ {testInterface} }}";
 using Subro.RecordForge;
 [assembly:GenerateRecordFromInterface(typeof(Foo.IBar))]
 ");
-            Assert.NotNull(comp.GetSymbol("Foo.Bar"));
+            await Assert.That(comp.GetSymbol("Foo.Bar")).IsNotNull();
         }
 
     }
 
 }
-
-
-

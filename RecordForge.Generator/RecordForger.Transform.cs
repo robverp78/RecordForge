@@ -107,7 +107,7 @@ namespace Subro.Generators
 
                 // Resolve kind from second constructor argument if present
                 var info = GetGenerateTypeInfo(attributeData, 1);
-                if (info == null)
+                if (info.IsNull)
                     yield return CreateInvalidKindDiagnostic(attributeData);
                 else
                     foreach (var typeSymbol in validTypes)
@@ -130,7 +130,7 @@ namespace Subro.Generators
             {
                 if (token.IsCancellationRequested) yield break;
                 var info = GetGenerateTypeInfo(attributeData, 0);
-                if (info == null)
+                if (info.IsNull)
                     yield return CreateInvalidKindDiagnostic(attributeData);
                 else if (context.TargetNode is InterfaceDeclarationSyntax interfaceNode
                     && context.SemanticModel.GetDeclaredSymbol(interfaceNode) is INamedTypeSymbol InterfaceSymbol
