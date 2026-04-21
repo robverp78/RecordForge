@@ -45,11 +45,12 @@ namespace Subro.Generators
                 {
                     case nameof(GenerateRecordAttribute.RecordName): recName = arg.Value.Value?.ToString(); break;
                     case nameof(GenerateRecordAttribute.NameSpace): recNameSpace = arg.Value.Value?.ToString(); break;
-                    case nameof(GenerateRecordAttribute.AsPartial): settings.AsPartial = arg.Value.Value as bool? ?? GenerateRecordAttribute.DefaultAsPartial; break;
-                    case nameof(GenerateRecordAttribute.AsAbstract): settings.AsAbstract = arg.Value.Value as bool? ?? false; break;
-                    case nameof(GenerateRecordAttribute.AlwaysCreateSetters): settings.AlwaysCreateSetters = arg.Value.Value as bool? ?? false; break;
+                    case nameof(GenerateRecordAttribute.AsPartial):
+                        settings = settings with { AsPartial = arg.Value.Value as bool? ?? GenerateRecordAttribute.DefaultAsPartial }; break;
+                    case nameof(GenerateRecordAttribute.AsAbstract): settings = settings with { AsAbstract = arg.Value.Value as bool? ?? false }; break;
+                    case nameof(GenerateRecordAttribute.AlwaysCreateSetters): settings = settings with { AlwaysCreateSetters = arg.Value.Value as bool? ?? false } ;break;
                     case nameof(GenerateRecordAttribute.ConstructorUsage):
-                        settings.ConstructorUsage = (CtorUsage)(arg.Value.Value as int? ?? 0); break;
+                        settings = settings with {ConstructorUsage = (CtorUsage)(arg.Value.Value as int? ?? 0)}; break;
                 }
 
             string InterfaceNamespace = InterfaceSymbol.GetNamespace();

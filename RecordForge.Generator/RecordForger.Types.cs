@@ -54,14 +54,14 @@ namespace Subro.Generators
         public bool IsNull => Keywords is null;
     }
 
-    record struct CreationSettings()
+    readonly record struct CreationSettings()
     {
-        public bool AsPartial { get; set; } = GenerateRecordAttribute.DefaultAsPartial;
+        public bool AsPartial { get; init; } = GenerateRecordAttribute.DefaultAsPartial;
 
-        public bool AsAbstract { get; set; } = false;
-        public bool AlwaysCreateSetters { get; set; }
+        public bool AsAbstract { get; init; } = false;
+        public bool AlwaysCreateSetters { get; init; }
 
-        public CtorUsage ConstructorUsage { get; set; }
+        public CtorUsage ConstructorUsage { get; init; }
     }
 
     [Flags]
