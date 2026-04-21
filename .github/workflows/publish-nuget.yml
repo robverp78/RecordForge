@@ -36,8 +36,13 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # Restore/build only the generator project (+ its transitive runtime
+      # ProjectReference). The .slnx additionally references test projects and
+      # a sibling '../Subro.Generators/TestBase/...' csproj that lives outside
+      # this repository, so a solution-wide restore would fail in CI. Those
+      # projects aren't needed to produce the NuGet package anyway.
       - name: Restore
-        run: dotnet restore Subro.RecordForge.slnx
+        run: dotnet restore RecordForge.Generator/Subro.RecordForge.Generator.csproj
 
       - name: Build & pack (Release)
         # GeneratePackageOnBuild=true on the generator csproj means the .nupkg
