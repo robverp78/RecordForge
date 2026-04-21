@@ -34,7 +34,16 @@
 		<NoWarn>$(NoWarn);NU5128</NoWarn>
 
 		<PackageId>Subro.RecordForge</PackageId>
-		<Version>0.1.1</Version>
+		<!--
+			Versioning is owned by MinVer: the package version is derived from git tags at
+			build time. Tagging a commit 'vX.Y.Z' produces the stable 'X.Y.Z'; commits past
+			the latest tag produce '<next-patch>-alpha.0.<height>' pre-releases. If no tag
+			exists yet, MinVerMinimumMajorMinor keeps us at 0.1.*. The MinVer package is
+			referenced privately so it does not leak into consumers.
+		-->
+		<MinVerTagPrefix>v</MinVerTagPrefix>
+		<MinVerMinimumMajorMinor>0.1</MinVerMinimumMajorMinor>
+		<MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
 		<Authors>Robert Verpalen</Authors>
 		<Description>Generate record/record struct/struct/class implementations from interfaces via a simple attribute. Ships runtime attributes plus a Roslyn incremental source generator.</Description>
 		<PackageTags>roslyn;source-generator;incremental-generator;record;record-struct;code-generation;interface</PackageTags>
@@ -63,6 +72,8 @@
 		<PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.3.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+		<!-- MinVer: derives Version/PackageVersion from git tags at build time. Build-only, never shipped. -->
+		<PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="all" />
 		<PackageReference Include="Subro.Generators.TransformResult" Version="1.4.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
